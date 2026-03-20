@@ -1,0 +1,42 @@
+# This is a Databricks asset bundle definition for ingesta_s3_brz.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: ingesta_s3_brz
+  uuid: 48d8fcd3-d201-450a-b715-39917a56095f
+
+include:
+  - resources/*.yml
+  - resources/*/*.yml
+
+# Variable declarations. These variables are assigned in the dev/prod targets below.
+variables:
+  catalog:
+    description: The catalog to use
+  schema:
+    description: The schema to use
+
+targets:
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-9b2582d7-a5ac.cloud.databricks.com
+    variables:
+      catalog: bronze_dev
+      schema: ${workspace.current_user.short_name}
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-9b2582d7-a5ac.cloud.databricks.com
+      # We explicitly deploy to /Workspace/Users/alexriveraduque@hotmail.com to make sure we only have a single copy.
+      root_path: /Workspace/datawizard_dlh/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: bronze
+      schema: prod
+    permissions:
+      - user_name: alexriveraduque@hotmail.com
+        level: CAN_MANAGE
